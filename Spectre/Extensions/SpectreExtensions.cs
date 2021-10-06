@@ -12,7 +12,6 @@ namespace Spectre
     /// </summary>
     public static class SpectreExtensions
     {
-        #region String
 
         /// <summary>
         /// When overridden in a derived class, encodes all the characters in the specified character array into a sequence of bytes.
@@ -24,9 +23,7 @@ namespace Spectre
             return Encoding.ASCII.GetBytes(value.ToCharArray());
         }
 
-        #endregion
 
-        #region Byte
 
         /// <summary>
         /// When overridden in a derived class, decodes all the bytes in the specified byte array into a string.
@@ -38,9 +35,7 @@ namespace Spectre
             return Encoding.ASCII.GetString(bytes);
         }
 
-        #endregion
 
-        #region Sockets
 
         /// <summary>
         /// Sends all message to <see cref="Socket"/>.
@@ -109,7 +104,7 @@ namespace Spectre
         {
             try
             {
-                var lastDataTime = DateTime.Now.Ticks;
+                var lastDataTime = DateTime.UtcNow.Ticks;
                 var buffer = new List<byte>();
                 var prevByte = new byte();
 
@@ -192,9 +187,7 @@ namespace Spectre
                 );
         }
 
-        #endregion
 
-        #region Long
 
         /// <summary>
         /// Update this last command time with current ticks.
@@ -202,7 +195,7 @@ namespace Spectre
         /// <param name="lastCommandTime">The last command execution time.</param>
         public static void Update(this long lastCommandTime)
         {
-            lastCommandTime = DateTime.Now.Ticks;
+            lastCommandTime = DateTime.UtcNow.Ticks;
         }
 
         /// <summary>
@@ -212,10 +205,13 @@ namespace Spectre
         /// <returns>A <see cref="System.Boolean"/> representing if a datetime ticks time reach time out.</returns>
         public static bool ReachTimeOut(this long measureDatetimeTicks, int? idleTimeout = null)
         {
+            // one hundred nanoseconds
+            // A single tick represents one hundred nanoseconds or one ten-millionth of a second.
+            // aka milliseconds
+
             var timeout = (idleTimeout != null) ? idleTimeout : ServerConstants.SessionIdleTimeOut;
-            return (DateTime.Now.Ticks > measureDatetimeTicks + ((long)(timeout)) * 10000);
+            return (DateTime.UtcNow.Ticks > measureDatetimeTicks + ((long)(timeout)) * 10000);
         }
 
-        #endregion
     }
 }

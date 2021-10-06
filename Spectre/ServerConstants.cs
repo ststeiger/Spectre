@@ -25,7 +25,9 @@
         /// <summary>
         /// Holds session idle timeout (default: 1,44 minute).
         /// </summary>
-        public const int SessionIdleTimeOut = 86400;
+        // public const int SessionIdleTimeOut = 86400; // 1 min 26 sec = 1.44 mins // this is milliseconds actually
+        public const int SessionIdleTimeOut = 5400; // 1 min 26 sec = 1.44 mins 
+        
 
         /// <summary>
         /// Holds command ilde timeout (default: 1 minute).

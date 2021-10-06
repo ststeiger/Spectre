@@ -13,14 +13,12 @@ namespace Spectre.Pop3
     /// </summary>
     public class Server
     {
-        #region Event Handlers
 
         /// <summary>
         /// Occurs when server has system error(Unknown error).
         /// </summary>
         public event ErrorEventHandler Error;
 
-        #endregion
 
         /// <summary>
         /// 
@@ -47,7 +45,6 @@ namespace Spectre.Pop3
         /// </summary>
         public bool IsListening { get; private set; }
 
-        #region Constructors
 
         /// <summary>
         /// Creates an instance of <see cref="Server"/>.
@@ -74,9 +71,7 @@ namespace Spectre.Pop3
             _listener = new TcpListener(IPAddress, Port);
         }
 
-        #endregion
 
-        #region Event Triggers
 
         /// <summary>
         /// Trigger the OnError event handler.
@@ -88,7 +83,6 @@ namespace Spectre.Pop3
             Error?.Invoke(this, new ErrorEventArgs(exception, stackTrace));
         }
 
-        #endregion
 
         /// <summary>
         /// Store a client session.
@@ -166,12 +160,13 @@ namespace Spectre.Pop3
         {
             try
             {
-                if (IsListening)
+                if (!IsListening)
                 {
                     _sessionContainer = new Hashtable();
                     var serverThread = new Thread(new ThreadStart(Listen));
 
                     serverThread.Start();
+                    IsListening = true;
                 }
             }
             catch (Exception ex)

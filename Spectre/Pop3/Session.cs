@@ -47,11 +47,11 @@ namespace Spectre.Pop3
         /// <param name="sessionID"></param>
         public Session(Server server, Socket client, string sessionID)
         {
-            SessionStartTime = DateTime.Now;
+            SessionStartTime = DateTime.UtcNow;
             Server = server;
             Client = client;
             SessionID = sessionID;
-            LatCommandTime = 0;
+            LatCommandTime = System.DateTime.UtcNow.Ticks;
         }
 
         /// <summary>
