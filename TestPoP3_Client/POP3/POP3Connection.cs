@@ -1,85 +1,70 @@
 ﻿
 // https://github.com/jon-artefact/POP3S-server/blob/master/src/Connexion.java
 // https://github.com/jon-artefact/POP3S-server/blob/master/Warehouse/john
-namespace TestPoP3_Client.POP3
+namespace TestPoP3_Client
 {
 
 
     // @author Jonathan & Damien
-    class Connexion // extends Thread
+    public class POP3Connection 
     {
 
-        protected System.Text.Encoding m_enc = System.Text.Encoding.UTF8;
+        // protected System.Text.Encoding m_enc = System.Text.Encoding.UTF8;
+        protected System.Text.Encoding m_enc = new System.Text.ASCIIEncoding();
 
-        private System.Collections.Generic.Dictionary<string, string> users;
-        private System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>> emails;
-        private System.Collections.Generic.List<bool> deletes;
+        protected System.Net.Sockets.TcpClient m_client;
+        protected System.Collections.Generic.Dictionary<string, string> m_users;
+        protected System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>> m_emails;
+        protected System.Collections.Generic.List<bool> m_deletes;
 
-        private System.Net.Sockets.Socket socket;
-        private System.IO.StreamWriter outData;
+        protected State m_state;
 
-        private State state;
-
-        private enum State
+        protected enum State
         {
             AUTHORIZATION,
             WAITING_FOR_PASSWORD,
             TRANSACTION
         }
 
-        Connexion(
-              System.Net.Sockets.Socket _socket
-            , System.Collections.Generic.Dictionary<string, string> _users
-            , System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>> _emails)
+        public void Start()
+        { }
+
+
+        public POP3Connection(
+              System.Net.Sockets.TcpClient client
+            , System.Collections.Generic.Dictionary<string, string> users
+            , System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>> emails)
         {
-            socket = _socket;
+            this.m_client = client;
+
             try
             {
                 // socket.setSoTimeout(0);
-                socket.SendTimeout = 0;
-                socket.ReceiveTimeout = 0;
+                this.m_client.SendTimeout = 0;
+                this.m_client.ReceiveTimeout = 0;
             }
             catch (System.Net.Sockets.SocketException ex)
             {
                 System.Console.WriteLine("Error socket time-out : " + ex.Message);
             }
-            users = _users;
-            emails = _emails;
+
+            this.m_users = users;
+            this.m_emails = emails;
         }
 
-        private bool ok()
-        {
-            return send("+OK");
-        }
 
-        private bool ok(string msg)
-        {
-            return send("+OK " + msg);
-        }
-
-        private bool err()
-        {
-            return send("-ERR Invalid");
-        }
-
-        private bool err(string msg)
-        {
-            return send("-ERR " + msg);
-        }
-
-        private bool sendMail(string msg)
+        private bool SendMail(string msg)
         {
             try
             {
-
-
                 byte[] bytes = m_enc.GetBytes(msg);
-                outData.BaseStream.Write(bytes, 0, bytes.Length);
 
-                outData.Flush();
+                System.Net.Sockets.NetworkStream clientStream = this.m_client.GetStream();
+                clientStream.Write(bytes, 0, bytes.Length);
+                clientStream.Flush();
+
                 System.Console.WriteLine("> " + msg);
                 return true;
-
             }
             catch (System.Exception e)
             {
@@ -88,54 +73,84 @@ namespace TestPoP3_Client.POP3
             }
         }
 
-        private bool send(string msg)
+
+        private bool Send(string msg)
         {
             msg += "\r\n";
-            return sendMail(msg);
+            return SendMail(msg);
         }
 
-        private string readLine() // throws IOException
-        {
-            // InputStream input = socket.getInputStream();
-            System.IO.StreamReader input = null;
 
+        private bool Ok()
+        {
+            return Send("+OK");
+        }
+
+
+        private bool Ok(string msg)
+        {
+            return Send("+OK " + msg);
+        }
+
+
+        private bool Err()
+        {
+            return Send("-ERR Invalid");
+        }
+
+
+        private bool Err(string msg)
+        {
+            return Send("-ERR " + msg);
+        }
+
+
+        private string ReadLine() 
+        {
             string line = "";
             int reading;
 
-            do
+            System.Net.Sockets.NetworkStream s = this.m_client.GetStream();
+            using (System.IO.StreamReader sr = new System.IO.StreamReader(s, m_enc, false, 4096, true))
             {
-
-                reading = input.Read();
-
-                if (reading == -1)
+                do
                 {
-                    return null;
-                }
 
-                line += (char)reading;
-            } while (!line.Contains("\r\n"));
+                    reading = sr.Read();
+
+                    if (reading == -1)
+                    {
+                        return null;
+                    }
+
+                    line += (char)reading;
+                } while (!line.Contains("\r\n"));
+            }
+
             return line.Replace("\r\n", "");
         }
 
-        private void success(string user)
+
+        private void Success(string user)
         {
-            deletes = new System.Collections.Generic.List<bool>();
+            this.m_deletes = new System.Collections.Generic.List<bool>();
             int total = 0;
-            for (int i = 0; i < emails[user].Count; i++)
+            for (int i = 0; i < this.m_emails[user].Count; i++)
             {
-                total += emails[user][i].Length;
-                deletes.Add(false);
+                total += this.m_emails[user][i].Length;
+                this.m_deletes.Add(false);
             }
 
-            ok(emails[user].Count + " " + total + " octets");
-            state = State.TRANSACTION;
+            Ok(this.m_emails[user].Count + " " + total + " octets");
+            this.m_state = State.TRANSACTION;
         }
 
-        public void run()
+
+        public void HandleConnection()
         {
             try
             {
-                state = State.AUTHORIZATION;
+                this.m_state = State.AUTHORIZATION;
 
                 // outData = new System.IO.StreamWriter(socket.getOutputStream());
 
@@ -143,13 +158,13 @@ namespace TestPoP3_Client.POP3
                 System.Guid uuid = System.Guid.NewGuid();
                 string timestamp = uuid.ToString().Substring(0, rand.Next(25 - 15 + 1) + 15);
                 timestamp = "<" + timestamp + ">";
-                ok("Server POP3 ready " + timestamp);
+                Ok("Server POP3 ready " + timestamp);
 
                 string line;
                 string user = "";
                 while (true)
                 {
-                    line = readLine();
+                    line = ReadLine();
                     System.Console.WriteLine("< " + line);
                     if (line != null)
                     {
@@ -157,43 +172,44 @@ namespace TestPoP3_Client.POP3
                         {
                             try
                             {
-                                for (int i = emails[user].Count - 1; i >= 0; --i)
-                                    if (deletes[i])
-                                        emails[user].RemoveAt(i);
+                                for (int i = this.m_emails[user].Count - 1; i >= 0; --i)
+                                    if (this.m_deletes[i])
+                                        this.m_emails[user].RemoveAt(i);
 
                                 try
                                 {
-                                    // DataOutputStream dos = new DataOutputStream(new System.IO.StreamWriter(new FileOutputStream(new File("Warehouse/john"))));
-                                    using (var dos = new System.IO.StreamWriter(""))
+                                    using (System.IO.StreamWriter dos = new System.IO.StreamWriter("johnny.txt"))
                                     {
-                                        foreach (string msg in emails["john"])
+                                        foreach (string msg in this.m_emails["john"])
                                         {
                                             byte[] ba = m_enc.GetBytes(msg);
                                             // dos.BaseStream.Write(ba, 0, ba.Length);
                                             dos.Write(msg);
                                         }
 
+                                        dos.Flush();
                                     }
 
 
                                     // Delete success
-                                    ok();
+                                    Ok();
                                 }
-                                catch (System.Exception ignored) { }
+                                catch (System.Exception ignored) 
+                                { }
 
-                                System.Console.WriteLine(emails[user].Count);
+                                System.Console.WriteLine(this.m_emails[user].Count);
                             }
                             catch (System.Exception e)
                             {
                                 // Delete failed
-                                err("Delete failed");
+                                Err("Delete failed");
                             }
                             break;
                         }
 
                         string[] lines = line.Split(' ');
 
-                        switch (state)
+                        switch (this.m_state)
                         {
                             case State.AUTHORIZATION:
                                 switch (lines[0])
@@ -201,10 +217,10 @@ namespace TestPoP3_Client.POP3
                                     case "APOP":
                                         if (lines.Length < 3)
                                         {
-                                            err("Bad APOP");
+                                            Err("Bad APOP");
                                             break;
                                         }
-                                        string password = users[lines[1]];
+                                        string password = this.m_users[lines[1]];
 
                                         try
                                         {
@@ -222,34 +238,34 @@ namespace TestPoP3_Client.POP3
                                         }
                                         catch (System.Exception e)
                                         {
-                                            err("Error");
+                                            Err("Error");
                                             break;
                                         }
 
                                         if (password != null && (string.Equals(lines[2], password)))
                                         {
                                             // APOP success
-                                            success(user = lines[1]);
+                                            Success(user = lines[1]);
                                         }
                                         else
                                         {
-                                            err("Bad APOP");
+                                            Err("Bad APOP");
                                         }
                                         break;
                                     case "USER":
-                                        if (lines.Length > 1 && users.ContainsKey(lines[1]))
+                                        if (lines.Length > 1 && this.m_users.ContainsKey(lines[1]))
                                         {
-                                            ok();
-                                            state = State.WAITING_FOR_PASSWORD;
+                                            Ok();
+                                            this.m_state = State.WAITING_FOR_PASSWORD;
                                             user = lines[1];
                                         }
                                         else
                                         {
-                                            err("Bad USER");
+                                            Err("Bad USER");
                                         }
                                         break;
                                     default:
-                                        err();
+                                        Err();
                                         break;
                                 }
                                 break;
@@ -262,52 +278,52 @@ namespace TestPoP3_Client.POP3
                                             try
                                             {
                                                 int i = int.Parse(lines[1], System.Globalization.CultureInfo.InvariantCulture) - 1;
-                                                if (!deletes[i])
+                                                if (!this.m_deletes[i])
                                                 {
-                                                    sendMail("+OK " + emails[user][i].Length + " octets \r\n" + emails[user][int.Parse(lines[1]) - 1]);
+                                                    SendMail("+OK " + this.m_emails[user][i].Length + " octets \r\n" + this.m_emails[user][int.Parse(lines[1]) - 1]);
                                                 }
                                             }
                                             catch (System.Exception e)
                                             {
-                                                err();
+                                                Err();
                                             }
                                             break;
                                         case "DELE":
                                             try
                                             {
-                                                deletes[int.Parse(lines[1], System.Globalization.CultureInfo.InvariantCulture)] = true;
-                                                ok();
+                                                this.m_deletes[int.Parse(lines[1], System.Globalization.CultureInfo.InvariantCulture)] = true;
+                                                Ok();
                                             }
                                             catch (System.Exception e)
                                             {
-                                                err();
+                                                Err();
                                             }
                                             break;
                                         default:
-                                            err();
+                                            Err();
                                             break;
                                     }
                                 }
                                 else
                                 {
-                                    err();
+                                    Err();
                                 }
                                 break;
                             case State.WAITING_FOR_PASSWORD:
-                                if (lines.Length > 1 && string.Equals(users[user], lines[1]))
+                                if (lines.Length > 1 && string.Equals(this.m_users[user], lines[1]))
                                 {
-                                    success(user);
+                                    Success(user);
                                 }
                                 else
                                 {
-                                    err("Bad PASS");
+                                    Err("Bad PASS");
                                 }
                                 break;
                         }
                     }
                     else
                     {
-                        err();
+                        Err();
                         break;
                     }
                 }
@@ -323,22 +339,17 @@ namespace TestPoP3_Client.POP3
             }
             finally
             {
-                close(outData);
-                close(socket);
+                Close(this.m_client);
             }
         }
 
-        /**
-         * Close a stream
-         *
-         * @param stream stream need to be closed
-         */
-        private void close(object stream)
+
+        // Close a stream @param stream stream need to be closed
+        protected void Close(object stream)
         {
             if (stream == null)
-            {
                 return;
-            }
+
             try
             {
                 if (stream is System.IO.StreamReader)
@@ -353,9 +364,9 @@ namespace TestPoP3_Client.POP3
                 {
                     ((System.IO.Stream)stream).Close();
                 }
-                else if (stream is System.Net.Sockets.Socket)
+                else if (stream is System.Net.Sockets.TcpClient)
                 {
-                    ((System.Net.Sockets.Socket)stream).Close();
+                    ((System.Net.Sockets.TcpClient)stream).Close();
                 }
                 else
                 {
@@ -364,11 +375,13 @@ namespace TestPoP3_Client.POP3
             }
             catch (System.Exception e)
             {
-
                 System.Console.Error.WriteLine("Error closing stream: " + e);
             }
-        }
-    }
+
+        } // End Sub Close 
 
 
-}
+    } // End Class POP3Connection 
+
+
+} // End Namespace 

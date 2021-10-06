@@ -14,10 +14,29 @@ namespace TestPoP3_Client
     {
 
 
-        static void Main(string[] args)
+        static async System.Threading.Tasks.Task TestPop3()
         {
-            TestPOP3.PrintCapabilities();
-            TestPOP3.PrintSslConnectionInfo("smtp.gmail.com", 587);
+            POP3Server.Test();
+            await System.Threading.Tasks.Task.Delay(100);
+            Pop3Test.PrintCapabilities("localhost", 110, MailKit.Security.SecureSocketOptions.None);
+        }
+
+
+
+        static async System.Threading.Tasks.Task TestImap()
+        {
+            ImapServer.Test();
+            await System.Threading.Tasks.Task.Delay(100);
+            ImapTest.Capabilities("localhost", 143, MailKit.Security.SecureSocketOptions.None);
+        }
+
+
+        static async System.Threading.Tasks.Task Main(string[] args)
+        {
+            // await SmtpTestClient.SendEmailAsync();
+            // SmtpExamples.PrintSslConnectionInfo("smtp.gmail.com", 587);
+            await TestImap();
+            
 
             System.Console.WriteLine(System.Environment.NewLine);
             System.Console.WriteLine(" --- Press any key to continue --- ");

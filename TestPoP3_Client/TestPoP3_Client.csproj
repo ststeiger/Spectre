@@ -9,4 +9,10 @@
     <PackageReference Include="MailKit" Version="2.15.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="john.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -4,7 +4,7 @@ namespace TestPoP3_Client
 
 
     // https://github.com/jstedfast/MailKit/blob/master/Documentation/Examples/Pop3Examples.cs
-    class TestPOP3
+    public static class Pop3Test
     {
 
 
@@ -18,7 +18,7 @@ namespace TestPoP3_Client
 
                 for (int i = 0; i < client.Count; i++)
                 {
-                    var message = client.GetMessage(i);
+                    MimeKit.MimeMessage message = client.GetMessage(i);
 
                     // write the message to a file
                     message.WriteTo(string.Format("{0}.msg", i));
@@ -42,7 +42,7 @@ namespace TestPoP3_Client
 
                 for (int i = 0; i < client.Count; i++)
                 {
-                    var message = client.GetMessage(i);
+                    MimeKit.MimeMessage message = client.GetMessage(i);
 
                     // write the message to a file
                     message.WriteTo(string.Format("{0}.msg", i));
@@ -66,7 +66,7 @@ namespace TestPoP3_Client
                 if (!client.Capabilities.HasFlag(MailKit.Net.Pop3.Pop3Capabilities.UIDL))
                     throw new System.Exception("The POP3 server does not support UIDs!");
 
-                var uids = client.GetMessageUids();
+                System.Collections.Generic.IList<string> uids = client.GetMessageUids();
 
                 for (int i = 0; i < client.Count; i++)
                 {
@@ -75,7 +75,7 @@ namespace TestPoP3_Client
                     if (previouslyDownloadedUids.Contains(uids[i]))
                         continue;
 
-                    var message = client.GetMessage(i);
+                    MimeKit.MimeMessage message = client.GetMessage(i);
 
                     // write the message to a file
                     message.WriteTo(string.Format("{0}.msg", uids[i]));
@@ -91,7 +91,7 @@ namespace TestPoP3_Client
 
         public static void DownloadNewMessages2(System.Collections.Generic.HashSet<string> previouslyDownloadedUids)
         {
-            using (var client = new MailKit.Net.Pop3.Pop3Client())
+            using (MailKit.Net.Pop3.Pop3Client client = new MailKit.Net.Pop3.Pop3Client())
             {
                 System.Collections.Generic.IList<string> uids = null;
 
@@ -167,7 +167,7 @@ namespace TestPoP3_Client
                     try
                     {
                         // download the message at the specified index
-                        var message = client.GetMessage(i);
+                        MimeKit.MimeMessage message = client.GetMessage(i);
 
                         // write the message to a file
                         if (uids != null)
@@ -205,15 +205,22 @@ namespace TestPoP3_Client
             }
         }
 
+
         public static void PrintCapabilities()
+        {
+            PrintCapabilities("pop.gmail.com", 995, MailKit.Security.SecureSocketOptions.SslOnConnect);
+        }
+
+
+        public static void PrintCapabilities(string server, int port, MailKit.Security.SecureSocketOptions options)
         {
             using (MailKit.Net.Pop3.Pop3Client client = new MailKit.Net.Pop3.Pop3Client())
             {
-                client.Connect("pop.gmail.com", 995, MailKit.Security.SecureSocketOptions.SslOnConnect);
+                client.Connect(server, port, options);
 
                 if (client.Capabilities.HasFlag(MailKit.Net.Pop3.Pop3Capabilities.Sasl))
                 {
-                    var mechanisms = string.Join(", ", client.AuthenticationMechanisms);
+                    string mechanisms = string.Join(", ", client.AuthenticationMechanisms);
                     System.Console.WriteLine("The POP3 server supports the following SASL mechanisms: {0}", mechanisms);
                 }
 
@@ -246,9 +253,10 @@ namespace TestPoP3_Client
             }
         }
 
+
         public static void PrintSslConnectionInfo(string host, int port)
         {
-            using (MailKit.Net.Smtp.SmtpClient client = new MailKit.Net.Smtp.SmtpClient())
+            using (MailKit.Net.Pop3.Pop3Client client = new MailKit.Net.Pop3.Pop3Client())
             {
                 client.Connect(host, port, MailKit.Security.SecureSocketOptions.Auto);
 
@@ -263,7 +271,7 @@ namespace TestPoP3_Client
 
                 // Example Log:
                 //
-                // Negotiated the following SSL options with pop.gmail.com:
+                // Negotiated the following SSL options with imap.gmail.com:
                 //         Protocol Version: Tls12
                 //         Cipher Algorithm: Aes128
                 //          Cipher Strength: 128

@@ -14,7 +14,7 @@ namespace TestPoP3_Client
         public MailSettings()
         {
             this.Author = "FirstName LastName";
-            this.Email = ReverseGraphemeClusters("hc.tnemeganam-roc}ta{ksedecivres").Replace("{at}", "@");
+            this.Email = ReverseGraphemeClusters("hc.tnemeganam-roc}ta{ksedecivres".Replace("}ta{", "@"));
             this.Password = "TOP_SECRET";
         }
 
@@ -43,13 +43,13 @@ namespace TestPoP3_Client
 
 
 
-    class TestSMPT
+    public class SmtpTestClient 
     {
 
 
-        public async System.Threading.Tasks.Task SendEmailAsync()
+        public static async System.Threading.Tasks.Task SendEmailAsync()
         {
-            string email = MailSettings.ReverseGraphemeClusters("hc.tnemeganam-roc]ta[regiets").Replace("[at]", "@");
+            string email = MailSettings.ReverseGraphemeClusters("hc.tnemeganam-roc]ta[regiets".Replace("]ta[", "@"));
             string subject = "This is a test"; 
             string message = "Test sent at " + System.DateTime.Now.ToString("dddd' 'dd'.'MM'.'yyyy' 'HH':'mm':'ss'.'fff");
 

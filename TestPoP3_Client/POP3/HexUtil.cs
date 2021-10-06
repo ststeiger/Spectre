@@ -1,5 +1,5 @@
 ﻿
-namespace TestPoP3_Client.POP3
+namespace TestPoP3_Client
 {
 
     public enum Capitalization
