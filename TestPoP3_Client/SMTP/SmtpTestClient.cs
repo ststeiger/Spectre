@@ -72,8 +72,10 @@ namespace TestPoP3_Client
                     // client.Send(emailMessage);
                     // client.Disconnect(true);
 
-                    await client.ConnectAsync("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.Auto);
-                    await client.AuthenticateAsync(_settings.Email, _settings.Password);
+                    // await client.ConnectAsync("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.Auto);
+                    // await client.ConnectAsync("localhost", 25, MailKit.Security.SecureSocketOptions.Auto);
+                    await client.ConnectAsync("127.0.0.1", 25, MailKit.Security.SecureSocketOptions.None);
+                    // await client.AuthenticateAsync(_settings.Email, _settings.Password);
 
                     await client.SendAsync(emailMessage);
                     await client.DisconnectAsync(true);

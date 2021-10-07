@@ -161,15 +161,21 @@ namespace TestPoP3_Client
 
 		public static void PrintCapabilities()
 		{
+			PrintCapabilities("smtp.gmail.com", 465, MailKit.Security.SecureSocketOptions.SslOnConnect);
+		}
+
+
+		public static void PrintCapabilities(string server, int port, MailKit.Security.SecureSocketOptions options)
+		{
 			using (MailKit.Net.Smtp.SmtpClient client = new MailKit.Net.Smtp.SmtpClient())
 			{
-				client.Connect("smtp.gmail.com", 465, MailKit.Security.SecureSocketOptions.SslOnConnect);
+				client.Connect(server, port, options);
 
 				if (client.Capabilities.HasFlag(MailKit.Net.Smtp.SmtpCapabilities.Authentication))
 				{
                     string mechanisms = string.Join(", ", client.AuthenticationMechanisms);
 					System.Console.WriteLine("The SMTP server supports the following SASL mechanisms: {0}", mechanisms);
-					client.Authenticate("username", "password");
+					// client.Authenticate("username", "password");
 				}
 
 				if (client.Capabilities.HasFlag(MailKit.Net.Smtp.SmtpCapabilities.Size))
