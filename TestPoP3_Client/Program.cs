@@ -33,7 +33,7 @@ namespace TestPoP3_Client
 
         static async System.Threading.Tasks.Task Main(string[] args)
         {
-            SmtpExamples.PrintCapabilities("localhost", 25, MailKit.Security.SecureSocketOptions.None);
+            // SmtpExamples.PrintCapabilities("localhost", 25, MailKit.Security.SecureSocketOptions.None);
             await SmtpTestClient.SendEmailAsync();
             // SmtpExamples.PrintSslConnectionInfo("smtp.gmail.com", 587);
             // await TestImap();

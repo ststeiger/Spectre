@@ -67,6 +67,8 @@ namespace TestPoP3_Client
             {
                 using (MailKit.Net.Smtp.SmtpClient client = new MailKit.Net.Smtp.SmtpClient())
                 {
+                    client.Timeout = int.MaxValue;
+
                     // client.Connect("smtp.gmail.com", 587, SecureSocketOptions.Auto);
                     // client.Authenticate(_settings.Email, _settings.Password);
                     // client.Send(emailMessage);
