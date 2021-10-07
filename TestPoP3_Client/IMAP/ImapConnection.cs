@@ -18,6 +18,44 @@ namespace TestPoP3_Client
         {
             this.m_client = client;
             this.m_cmdId = cmdId;
+
+            try
+            {
+                // socket.setSoTimeout(0);
+                this.m_client.SendTimeout = 0;
+                this.m_client.ReceiveTimeout = 0;
+            }
+            catch (System.Net.Sockets.SocketException ex)
+            {
+                System.Console.WriteLine("Error socket time-out : " + ex.Message);
+            }
+
+        }
+
+
+        private string ReadLine()
+        {
+            string line = "";
+            int reading;
+
+            System.Net.Sockets.NetworkStream s = this.m_client.GetStream();
+            using (System.IO.StreamReader sr = new System.IO.StreamReader(s, m_enc, false, 4096, true))
+            {
+                do
+                {
+
+                    reading = sr.Read();
+
+                    if (reading == -1)
+                    {
+                        return null;
+                    }
+
+                    line += (char)reading;
+                } while (!line.Contains("\r\n"));
+            }
+
+            return line.Replace("\r\n", "");
         }
 
 
@@ -52,6 +90,8 @@ namespace TestPoP3_Client
                     {
                         string message = "";
                         string file = "mail.txt";
+
+                        // A FLAG THAT CHECKS WE ARE INVOLVED
                         bool log = false; // FLAG KOJI PROVERAVA DA LI SMO ULOGAVNI
 
                         while (!message.StartsWith("logout"))
@@ -65,6 +105,8 @@ namespace TestPoP3_Client
                                 );
 
                                 log = true;
+
+                                // EACH COMMAND HAS ITS OWN ID
                                 this.m_cmdId++; // SVAKA KOMANDA IMA SVOJ ID
                             }
                             if (message.StartsWith("select") && log)
@@ -79,11 +121,16 @@ namespace TestPoP3_Client
 
                             }
                             if (message.StartsWith("fetch") && log)
-                            { // UCITAVANJE MEJLOVA IZ FAJLA
+                            {
+                                // LOAD EMAILS FROM FILE
+                                // UCITAVANJE MEJLOVA IZ FAJLA
                                 string[] token = message.Split(' ');
+                                // kolicina = quantity
                                 int kolicina = int.Parse(token[1], System.Globalization.CultureInfo.InvariantCulture);
 
                                 outputstream.WriteLine("* " + kolicina.ToString(System.Globalization.CultureInfo.InvariantCulture) + "fetch");
+
+                                // prouka = message
                                 string poruka = LoadFromFile(file, kolicina);
                                 outputstream.WriteLine(poruka);
                                 outputstream.WriteLine("cmdId"
@@ -97,8 +144,10 @@ namespace TestPoP3_Client
                             if (message.StartsWith("delete") && log)
                             {
                                 string[] token = message.Split(' ');
+                                // kolicina = quantity
                                 int kolicina = int.Parse(token[1], System.Globalization.CultureInfo.InvariantCulture);
                                 RemoveLineFromFile(file, kolicina);
+
                                 outputstream.WriteLine("* " + kolicina + "deleted");
                                 outputstream.WriteLine("cmdId"
                                     + this.m_cmdId.ToString(System.Globalization.CultureInfo.InvariantCulture)
