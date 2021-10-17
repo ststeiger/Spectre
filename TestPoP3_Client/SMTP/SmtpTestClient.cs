@@ -68,6 +68,7 @@ namespace TestPoP3_Client
                 using (MailKit.Net.Smtp.SmtpClient client = new MailKit.Net.Smtp.SmtpClient())
                 {
                     client.Timeout = int.MaxValue;
+                    client.Timeout = 5000;
 
                     // client.Connect("smtp.gmail.com", 587, SecureSocketOptions.Auto);
                     // client.Authenticate(_settings.Email, _settings.Password);
@@ -76,7 +77,18 @@ namespace TestPoP3_Client
 
                     // await client.ConnectAsync("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.Auto);
                     // await client.ConnectAsync("localhost", 25, MailKit.Security.SecureSocketOptions.Auto);
-                    await client.ConnectAsync("127.0.0.1", 25, MailKit.Security.SecureSocketOptions.None);
+                    // await client.ConnectAsync("127.0.0.1", 25, MailKit.Security.SecureSocketOptions.None);
+
+                    // await client.ConnectAsync("daniel-steiger.ch", 465, MailKit.Security.SecureSocketOptions.SslOnConnect);
+
+
+
+                    // await client.ConnectAsync("daniel-steiger.ch", 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    // await client.ConnectAsync("daniel-steiger.ch", 587, MailKit.Security.SecureSocketOptions.StartTlsWhenAvailable);
+                    // await client.ConnectAsync("daniel-steiger.ch", 587, MailKit.Security.SecureSocketOptions.None);
+                    await client.ConnectAsync("daniel-steiger.ch", 587, MailKit.Security.SecureSocketOptions.StartTlsWhenAvailable);
+
+
                     // await client.AuthenticateAsync(_settings.Email, _settings.Password);
 
                     await client.SendAsync(emailMessage);
