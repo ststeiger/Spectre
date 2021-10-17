@@ -79,15 +79,13 @@ namespace TestPoP3_Client
                     // await client.ConnectAsync("localhost", 25, MailKit.Security.SecureSocketOptions.Auto);
                     // await client.ConnectAsync("127.0.0.1", 25, MailKit.Security.SecureSocketOptions.None);
 
-                    // await client.ConnectAsync("daniel-steiger.ch", 465, MailKit.Security.SecureSocketOptions.SslOnConnect);
+                    // await client.ConnectAsync("daniel-steiger.ch", 25, MailKit.Security.SecureSocketOptions.None);
+                    // await client.ConnectAsync("daniel-steiger.ch", 465, MailKit.Security.SecureSocketOptions.SslOnConnect); // Only if SECURE 
 
-
-
-                    // await client.ConnectAsync("daniel-steiger.ch", 587, MailKit.Security.SecureSocketOptions.StartTls);
-                    // await client.ConnectAsync("daniel-steiger.ch", 587, MailKit.Security.SecureSocketOptions.StartTlsWhenAvailable);
                     // await client.ConnectAsync("daniel-steiger.ch", 587, MailKit.Security.SecureSocketOptions.None);
+                    // await client.ConnectAsync("daniel-steiger.ch", 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    // await client.ConnectAsync("daniel-steiger.ch", 587, MailKit.Security.SecureSocketOptions.SslOnConnect); // Only if SECURE - doesn't work on 587
                     await client.ConnectAsync("daniel-steiger.ch", 587, MailKit.Security.SecureSocketOptions.StartTlsWhenAvailable);
-
 
                     // await client.AuthenticateAsync(_settings.Email, _settings.Password);
 
