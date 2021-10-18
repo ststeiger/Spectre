@@ -16,9 +16,14 @@ namespace TestPoP3_Client
 
         static async System.Threading.Tasks.Task TestPop3()
         {
-            POP3Server.Test();
-            await System.Threading.Tasks.Task.Delay(100);
-            Pop3Test.PrintCapabilities("localhost", 110, MailKit.Security.SecureSocketOptions.None);
+            // Pop3Test.PrintCapabilities("localhost", 110, MailKit.Security.SecureSocketOptions.None);
+            // Pop3Test.PrintCapabilities("127.0.0.1", 110, MailKit.Security.SecureSocketOptions.None);
+            Pop3Test.DownloadMessages("127.0.0.1", 110, "USERNA", "pw", MailKit.Security.SecureSocketOptions.None);
+
+
+            // POP3Server.Test();
+            // await System.Threading.Tasks.Task.Delay(100);
+            await System.Threading.Tasks.Task.CompletedTask;
         }
 
 
@@ -31,13 +36,20 @@ namespace TestPoP3_Client
         }
 
 
+        static async System.Threading.Tasks.Task TestSmtp()
+        {
+            SmtpExamples.PrintCapabilities("localhost", 25, MailKit.Security.SecureSocketOptions.None);
+            await SmtpTestClient.SendEmailAsync();
+            SmtpExamples.PrintSslConnectionInfo("smtp.gmail.com", 587);
+        }
+
+
         static async System.Threading.Tasks.Task Main(string[] args)
         {
-            // SmtpExamples.PrintCapabilities("localhost", 25, MailKit.Security.SecureSocketOptions.None);
-            await SmtpTestClient.SendEmailAsync();
-            // SmtpExamples.PrintSslConnectionInfo("smtp.gmail.com", 587);
             // await TestImap();
-            
+            // await TestSmtp();
+            await TestPop3();
+
 
             System.Console.WriteLine(System.Environment.NewLine);
             System.Console.WriteLine(" --- Press any key to continue --- ");

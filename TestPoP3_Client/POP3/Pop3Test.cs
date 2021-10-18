@@ -8,13 +8,17 @@ namespace TestPoP3_Client
     {
 
 
-        public static void DownloadMessages()
+        public static void DownloadMessages(string pop3Server, int port, string username, string password, MailKit.Security.SecureSocketOptions socketOptions)
         {
+            // pop3Server = "pop.gmail.com";
+            // port = 995;
+            // socketOptions = MailKit.Security.SecureSocketOptions.SslOnConnect;
+
             using (MailKit.Net.Pop3.Pop3Client client = new MailKit.Net.Pop3.Pop3Client(new MailKit.ProtocolLogger("pop3.log")))
             {
-                client.Connect("pop.gmail.com", 995, MailKit.Security.SecureSocketOptions.SslOnConnect);
+                client.Connect(pop3Server, port, socketOptions);
 
-                client.Authenticate("username", "password");
+                client.Authenticate(username, password);
 
                 for (int i = 0; i < client.Count; i++)
                 {
