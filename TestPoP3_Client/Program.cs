@@ -16,9 +16,9 @@ namespace TestPoP3_Client
 
         static async System.Threading.Tasks.Task TestPop3()
         {
-            // Pop3Test.PrintCapabilities("localhost", 110, MailKit.Security.SecureSocketOptions.None);
+            Pop3Test.PrintCapabilities("localhost", 110, MailKit.Security.SecureSocketOptions.None);
             // Pop3Test.PrintCapabilities("127.0.0.1", 110, MailKit.Security.SecureSocketOptions.None);
-            Pop3Test.DownloadMessages("127.0.0.1", 110, "USERNA", "pw", MailKit.Security.SecureSocketOptions.None);
+            // Pop3Test.DownloadMessages("127.0.0.1", 110, "USERNA", "pw", MailKit.Security.SecureSocketOptions.None);
 
 
             // POP3Server.Test();
